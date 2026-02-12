@@ -78,8 +78,8 @@ Notification Service logs notification to MySQL
 
 ```
 microservices-app/
-├── README.md                       # Main documentation
-├── docker-compose.yml              # Runs everything
+├── README.md                       
+├── docker-compose.yml              # Spining up everything
 ├── start.sh                        # Helper script
 ├── init-db.sql                     # Database setup
 │
@@ -100,7 +100,7 @@ microservices-app/
 │
 └── frontend/                       # Angular UI
     ├── Dockerfile
-    ├── package.json                # NPM config
-    └── src/app/...                 # Angular code
+    ├── package.json                
+    └── src/app/...                 
 ```
 
