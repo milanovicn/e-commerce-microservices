@@ -1,0 +1,145 @@
+<div class="container">
+  <div class="header">
+    <h1>🛒 E-Commerce Microservices</h1>
+    <p>Spring Boot + Angular Demo Application</p>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab" [class.active]="activeTab === 'products'" (click)="setActiveTab('products')">
+      Products
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'cart'" (click)="setActiveTab('cart')">
+      Cart ({{ cart.length }})
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'orders'" (click)="setActiveTab('orders')">
+      Orders
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'notifications'" (click)="setActiveTab('notifications')">
+      Notifications
+    </button>
+  </div>
+
+  <div class="content">
+    <div *ngIf="message" [class]="messageType === 'success' ? 'success' : 'error'">
+      {{ message }}
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <h3>Loading...</h3>
+    </div>
+
+    <!-- Products Tab -->
+    <div *ngIf="activeTab === 'products' && !loading">
+      <h2>Available Products</h2>
+      <div class="product-grid">
+        <div class="product-card" *ngFor="let product of products">
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.description }}</p>
+          <div class="price">${{ product.price.toFixed(2) }}</div>
+          <div class="stock">Stock: {{ product.stockQuantity }} units</div>
+          <button 
+            (click)="addToCart(product)" 
+            [disabled]="product.stockQuantity === 0">
+            {{ product.stockQuantity > 0 ? 'Add to Cart' : 'Out of Stock' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart Tab -->
+    <div *ngIf="activeTab === 'cart'">
+      <h2>Shopping Cart</h2>
+      
+      <div *ngIf="cart.length === 0" class="empty-state">
+        <h3>Your cart is empty</h3>
+        <p>Add some products to get started!</p>
+      </div>
+
+      <div *ngIf="cart.length > 0">
+        <div class="cart">
+          <div class="cart-item" *ngFor="let item of cart; let i = index">
+            <div>
+              <strong>{{ item.product.name }}</strong><br>
+              <span>${{ item.product.price.toFixed(2) }} × {{ item.quantity }}</span>
+            </div>
+            <div>
+              <strong>${{ (item.product.price * item.quantity).toFixed(2) }}</strong>
+              <button (click)="removeFromCart(i)">Remove</button>
+            </div>
+          </div>
+          <div class="total">
+            Total: ${{ getCartTotal().toFixed(2) }}
+          </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+          <h3>Customer Information</h3>
+          <div class="form-group">
+            <label>Name:</label>
+            <input type="text" [(ngModel)]="customerName" placeholder="Enter your name">
+          </div>
+          <div class="form-group">
+            <label>Email:</label>
+            <input type="email" [(ngModel)]="customerEmail" placeholder="Enter your email">
+          </div>
+          <button class="btn" (click)="placeOrder()" [disabled]="loading">
+            {{ loading ? 'Processing...' : 'Place Order' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Tab -->
+    <div *ngIf="activeTab === 'orders' && !loading">
+      <h2>Order History</h2>
+      
+      <div *ngIf="orders.length === 0" class="empty-state">
+        <h3>No orders yet</h3>
+        <p>Place your first order to see it here!</p>
+      </div>
+
+      <div class="order-list" *ngIf="orders.length > 0">
+        <div class="order-card" *ngFor="let order of orders">
+          <h3>Order #{{ order.id }}</h3>
+          <p><strong>Customer:</strong> {{ order.customerName }} ({{ order.customerEmail }})</p>
+          <p><strong>Total:</strong> ${{ order.totalAmount.toFixed(2) }}</p>
+          <p><strong>Status:</strong> 
+            <span class="badge" [class.badge-confirmed]="order.status === 'CONFIRMED'" 
+                  [class.badge-pending]="order.status === 'PENDING'">
+              {{ order.status }}
+            </span>
+          </p>
+          <p><strong>Date:</strong> {{ order.createdAt | date:'medium' }}</p>
+          
+          <div class="order-items">
+            <h4>Items:</h4>
+            <div class="order-item" *ngFor="let item of order.items">
+              {{ item.productName }} - Qty: {{ item.quantity }} - ${{ item.price.toFixed(2) }} each
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div *ngIf="activeTab === 'notifications' && !loading">
+      <h2>Notifications</h2>
+      
+      <div *ngIf="notifications.length === 0" class="empty-state">
+        <h3>No notifications</h3>
+        <p>You'll see order confirmations here!</p>
+      </div>
+
+      <div class="notification-list" *ngIf="notifications.length > 0">
+        <div class="notification-card" *ngFor="let notification of notifications">
+          <p><strong>{{ notification.notificationType }}</strong></p>
+          <p>{{ notification.message }}</p>
+          <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+            To: {{ notification.recipientEmail }} | 
+            {{ notification.sentAt | date:'medium' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
