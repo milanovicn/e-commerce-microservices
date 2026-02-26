@@ -29,6 +29,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
     depends_on:
       mysql:
         condition: service_healthy
@@ -101,6 +102,19 @@ services:
     restart: unless-stopped
     ports:
       - "${PROMETHEUS_SERVICE_PORT}:${PROMETHEUS_SERVICE_PORT}"
+
+  otel-collector:
+    image: ${COLLECTOR_CONTRIB_IMAGE}
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8889:8889"   # Prometheus exporter
+    networks:
+      - microservices-network
 
 networks:
   microservices-network:
