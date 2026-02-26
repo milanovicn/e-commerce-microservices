@@ -5,7 +5,9 @@ import com.example.product.dto.StockCheckRequest;
 import com.example.product.dto.StockCheckResponse;
 import com.example.product.model.Product;
 import com.example.product.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,37 +16,100 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ProductService {
     
     private final ProductRepository productRepository;
+    private final MeterRegistry meterRegistry;
+    
+    // Custom Metrics
+    private final Counter productViewCounter;
+    private final Counter stockReductionCounter;
+    private final Counter stockCheckCounter;
+    private final Timer productFetchTimer;
+    
+    public ProductService(ProductRepository productRepository, MeterRegistry meterRegistry) {
+        this.productRepository = productRepository;
+        this.meterRegistry = meterRegistry;
+        
+        // Initialize custom metrics
+        this.productViewCounter = Counter.builder("products.viewed")
+                .description("Number of times products were viewed")
+                .tag("service", "product-service")
+                .register(meterRegistry);
+        
+        this.stockReductionCounter = Counter.builder("products.stock.reduced")
+                .description("Number of times stock was reduced")
+                .tag("service", "product-service")
+                .register(meterRegistry);
+        
+        this.stockCheckCounter = Counter.builder("products.stock.checked")
+                .description("Number of stock check operations")
+                .tag("service", "product-service")
+                .register(meterRegistry);
+        
+        this.productFetchTimer = Timer.builder("products.fetch.time")
+                .description("Time taken to fetch products from database")
+                .tag("service", "product-service")
+                .register(meterRegistry);
+    }
     
     public List<ProductDTO> getAllProducts() {
         log.info("Fetching all products");
-        return productRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        
+        // Increment view counter
+        productViewCounter.increment();
+        
+        // Time the database fetch operation
+        return productFetchTimer.record(() -> {
+            List<ProductDTO> products = productRepository.findAll().stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+            
+            // Track number of products returned as a gauge
+            meterRegistry.gauge("products.catalog.size", products.size());
+            
+            return products;
+        });
     }
     
     public ProductDTO getProductById(Long id) {
         log.info("Fetching product with id: {}", id);
+        
+        // Increment view counter
+        productViewCounter.increment();
+        
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> {
+                    // Track product not found errors
+                    meterRegistry.counter("products.not.found", 
+                            "product_id", id.toString()).increment();
+                    return new RuntimeException("Product not found with id: " + id);
+                });
+        
         return convertToDTO(product);
     }
     
     public List<ProductDTO> getAvailableProducts() {
         log.info("Fetching available products");
-        return productRepository.findByStockQuantityGreaterThan(0).stream()
+        
+        List<ProductDTO> availableProducts = productRepository.findByStockQuantityGreaterThan(0).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+        
+        // Track available products count
+        meterRegistry.gauge("products.available.count", availableProducts.size());
+        
+        return availableProducts;
     }
     
     @Transactional
     public StockCheckResponse checkStock(StockCheckRequest request) {
         log.info("Checking stock for product: {} with quantity: {}", 
                  request.getProductId(), request.getQuantity());
+        
+        // Increment stock check counter
+        stockCheckCounter.increment();
         
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -54,6 +119,15 @@ public class ProductService {
                 ? "Stock available" 
                 : "Insufficient stock. Available: " + product.getStockQuantity();
         
+        // Track stock check results
+        if (available) {
+            meterRegistry.counter("products.stock.check.result", 
+                    "result", "sufficient").increment();
+        } else {
+            meterRegistry.counter("products.stock.check.result", 
+                    "result", "insufficient").increment();
+        }
+        
         return new StockCheckResponse(
                 product.getId(),
                 product.getName(),
@@ -62,20 +136,45 @@ public class ProductService {
                 message
         );
     }
-    
+        
     @Transactional
     public void reduceStock(Long productId, Integer quantity) {
         log.info("Reducing stock for product: {} by quantity: {}", productId, quantity);
+        
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         
         if (product.getStockQuantity() < quantity) {
+            // Track insufficient stock events
+            meterRegistry.counter("products.stock.insufficient", 
+                    "product_id", productId.toString(),
+                    "product_name", product.getName())
+                    .increment();
             throw new RuntimeException("Insufficient stock");
         }
         
+        int previousStock = product.getStockQuantity();
         product.setStockQuantity(product.getStockQuantity() - quantity);
-        productRepository.save(product);
-        log.info("Stock reduced successfully. New stock: {}", product.getStockQuantity());
+        Product savedProduct = productRepository.save(product);
+        
+        // Increment successful stock reduction counter
+        stockReductionCounter.increment();
+        
+        // Track the quantity of stock reduced
+        meterRegistry.counter("products.stock.units.reduced", 
+                "product_id", productId.toString())
+                .increment(quantity);
+        
+        // Track current stock level with tags (RECOMMENDED)
+        io.micrometer.core.instrument.Tags tags = io.micrometer.core.instrument.Tags.of(
+                "product_id", productId.toString(),
+                "product_name", savedProduct.getName()
+        );
+        meterRegistry.gauge("products.stock.level", tags, savedProduct, 
+                p -> (double) p.getStockQuantity());
+        
+        log.info("Stock reduced successfully. Previous: {}, Reduced: {}, New: {}", 
+                previousStock, quantity, savedProduct.getStockQuantity());
     }
     
     private ProductDTO convertToDTO(Product product) {
