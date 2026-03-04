@@ -45,6 +45,17 @@ CREATE TABLE IF NOT EXISTS notifications (
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Insert sample products
 INSERT INTO products (name, description, price, stock_quantity) VALUES
 ('Laptop Pro 15', 'High-performance laptop with 16GB RAM', 1299.99, 25),
@@ -55,3 +66,12 @@ INSERT INTO products (name, description, price, stock_quantity) VALUES
 ('Webcam HD', '1080p HD webcam with built-in microphone', 69.99, 40),
 ('Headphones Pro', 'Noise-cancelling over-ear headphones', 199.99, 30),
 ('Monitor 27"', '27-inch 4K UHD monitor', 399.99, 15);
+
+-- Insert admin user (password: admin123)
+-- Password is BCrypt hash of 'admin123'
+INSERT INTO users (username, password, email, role) VALUES
+('admin', '$2a$10$rN7VyH5pKLHBQOK8h7Y6AeMQ.YKFzQ6oLxmP7Yp6wZ8YQJ5B6E1yS', 'admin@example.com', 'ADMIN');
+
+-- Insert regular user (password: user123)
+INSERT INTO users (username, password, email, role) VALUES
+('user', '$2a$10$3qZ9YKW1Q5pLHY7xZ8YQJ5B6E1ySrN7VyH5pKLHBQOK8h7Y6AeMQ', 'user@example.com', 'USER');

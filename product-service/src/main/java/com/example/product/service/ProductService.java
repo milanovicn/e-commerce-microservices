@@ -220,5 +220,27 @@ public class ProductService {
         }
     }
     
-    
+    @Transactional
+    public void restockProduct(Long productId, Integer quantity) {
+        log.info("Restocking product: {} with quantity: {}", productId, quantity);
+        
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        
+        product.setStockQuantity(product.getStockQuantity() + quantity);
+        Product savedProduct = productRepository.save(product);
+        
+        // Update metrics
+        meterRegistry.counter("products.restocked", 
+                "product_id", productId.toString())
+                .increment();
+        
+        // Update stock level gauge
+        AtomicInteger stockLevel = stockLevels.get(productId);
+        if (stockLevel != null) {
+                stockLevel.set(savedProduct.getStockQuantity());
+        }
+        
+        log.info("Product restocked. New stock: {}", savedProduct.getStockQuantity());
+    }
 }

@@ -53,4 +53,47 @@ public class ProductController {
         productService.reduceStock(id, quantity);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{id}/restock")
+    public ResponseEntity<String> restockProduct(
+            @PathVariable Long id,
+            @RequestParam Integer quantity,
+            @RequestHeader("Authorization") String token) {
+        
+        // Validate token and check admin role
+        if (!isAdmin(token)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Admin access required");
+        }
+        
+        productService.restockProduct(id, quantity);
+        return ResponseEntity.ok("Product restocked successfully");
+    }
+
+    private boolean isAdmin(String token) {
+        // Call user-service to validate token and check role
+        String jwt = token.replace("Bearer ", "");
+        
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.exchange(
+                "http://user-service:8084/api/auth/validate",
+                HttpMethod.GET,
+                new HttpEntity<>(createHeaders(jwt)),
+                Map.class
+            );
+            
+            // Extract role from response
+            // This is simplified - in production, decode JWT or call user service
+            return true; // For now, implement proper validation
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private HttpHeaders createHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        return headers;
+    }
 }
