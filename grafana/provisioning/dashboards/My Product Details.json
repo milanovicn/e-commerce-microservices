@@ -1,0 +1,119 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "${product_name}",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.4.0",
+      "title": "Product Panel",
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 11,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "libraryPanel": {
+        "name": "Product Reduction - $product_name",
+        "uid": "dfexzbhifmfpcd"
+      },
+      "title": "Product Reduction - $product_name",
+      "type": "library-panel-ref"
+    },
+    {
+      "gridPos": {
+        "h": 14,
+        "w": 7,
+        "x": 11,
+        "y": 8
+      },
+      "id": 1,
+      "libraryPanel": {
+        "name": "Current Stock",
+        "uid": "efeift1tqy5tsd"
+      },
+      "title": "Current Stock",
+      "type": "library-panel-ref"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": "Headphones Pro",
+          "value": "Headphones Pro"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(microservices_products_stock_level,product_name)",
+        "name": "product_name",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(microservices_products_stock_level,product_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "regexApplyTo": "value",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "My Product Details",
+  "uid": "adbjgg8",
+  "version": 3,
+  "weekStart": ""
+}

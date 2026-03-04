@@ -7,12 +7,16 @@ import com.example.product.model.Product;
 import com.example.product.repository.ProductRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;  
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;  
+import java.util.concurrent.ConcurrentHashMap; 
+import java.util.concurrent.atomic.AtomicInteger; 
 import java.util.stream.Collectors;
 
 @Service
@@ -21,7 +25,9 @@ public class ProductService {
     
     private final ProductRepository productRepository;
     private final MeterRegistry meterRegistry;
-    
+
+    private final Map<Long, AtomicInteger> stockLevels = new ConcurrentHashMap<>();
+
     // Custom Metrics
     private final Counter productViewCounter;
     private final Counter stockReductionCounter;
@@ -52,6 +58,8 @@ public class ProductService {
                 .description("Time taken to fetch products from database")
                 .tag("service", "product-service")
                 .register(meterRegistry);
+
+        initializeStockGauges();
     }
     
     public List<ProductDTO> getAllProducts() {
@@ -165,13 +173,20 @@ public class ProductService {
                 "product_id", productId.toString())
                 .increment(quantity);
         
-        // Track current stock level with tags (RECOMMENDED)
-        io.micrometer.core.instrument.Tags tags = io.micrometer.core.instrument.Tags.of(
-                "product_id", productId.toString(),
-                "product_name", savedProduct.getName()
-        );
-        meterRegistry.gauge("products.stock.level", tags, savedProduct, 
-                p -> (double) p.getStockQuantity());
+        // Update the stock level in map
+        AtomicInteger stockLevel = stockLevels.computeIfAbsent(productId, 
+                id -> {
+                    AtomicInteger newLevel = new AtomicInteger(savedProduct.getStockQuantity());
+                    meterRegistry.gauge("products.stock.level",
+                            Tags.of(
+                                    "product_id", productId.toString(),
+                                    "product_name", savedProduct.getName()
+                            ),
+                            newLevel,
+                            AtomicInteger::get);
+                    return newLevel;
+                });
+        stockLevel.set(savedProduct.getStockQuantity());
         
         log.info("Stock reduced successfully. Previous: {}, Reduced: {}, New: {}", 
                 previousStock, quantity, savedProduct.getStockQuantity());
@@ -186,4 +201,24 @@ public class ProductService {
                 product.getStockQuantity()
         );
     }
+
+    private void initializeStockGauges() {
+        // Load all products and register gauges
+        List<Product> products = productRepository.findAll();
+        for (Product product : products) {
+            AtomicInteger stockLevel = new AtomicInteger(product.getStockQuantity());
+            stockLevels.put(product.getId(), stockLevel);
+            
+            // Register gauge with strong reference
+            meterRegistry.gauge("products.stock.level",
+                    Tags.of(
+                            "product_id", product.getId().toString(),
+                            "product_name", product.getName()
+                    ),
+                    stockLevel,
+                    AtomicInteger::get);
+        }
+    }
+    
+    
 }
