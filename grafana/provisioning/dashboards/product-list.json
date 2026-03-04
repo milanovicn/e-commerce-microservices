@@ -1,18 +1,29 @@
 {
   "annotations": {
-    "list": []
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 4,
@@ -30,14 +41,14 @@
         "content": "# 📦 Product Inventory Dashboard\n\nWelcome to the Product Inventory Management System. Click on any product name to view detailed analytics.",
         "mode": "markdown"
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.0",
       "title": "Header",
       "type": "text"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -50,16 +61,17 @@
             "steps": [
               {
                 "color": "red",
-                "value": null
+                "value": 0
               },
               {
-                "color": "green",
+                "color": "semi-dark-green",
                 "value": 5
               }
             ]
           },
           "unit": "short"
-        }
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 6,
@@ -73,6 +85,7 @@
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -80,9 +93,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -100,7 +115,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -112,21 +127,22 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
+                "color": "semi-dark-red",
+                "value": 0
               },
               {
-                "color": "yellow",
+                "color": "semi-dark-yellow",
                 "value": 50
               },
               {
-                "color": "green",
+                "color": "semi-dark-green",
                 "value": 100
               }
             ]
           },
           "unit": "short"
-        }
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 6,
@@ -140,6 +156,7 @@
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -147,9 +164,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -167,7 +186,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "description": "Products with less than 10 units",
       "fieldConfig": {
@@ -180,21 +199,22 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "semi-dark-green",
+                "value": 0
               },
               {
-                "color": "orange",
+                "color": "semi-dark-orange",
                 "value": 1
               },
               {
-                "color": "red",
+                "color": "semi-dark-red",
                 "value": 3
               }
             ]
           },
           "unit": "short"
-        }
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 6,
@@ -208,6 +228,7 @@
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -215,9 +236,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -235,7 +258,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -247,13 +270,14 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "semi-dark-green",
+                "value": 0
               }
             ]
           },
           "unit": "short"
-        }
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 6,
@@ -267,6 +291,7 @@
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -274,9 +299,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -294,7 +321,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -302,6 +329,9 @@
             "align": "auto",
             "cellOptions": {
               "type": "auto"
+            },
+            "footer": {
+              "reducers": []
             },
             "inspect": false
           },
@@ -311,7 +341,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -356,16 +386,20 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "red",
-                      "value": null
+                      "color": "light-red",
+                      "value": 0
                     },
                     {
-                      "color": "yellow",
+                      "color": "light-yellow",
                       "value": 10
                     },
                     {
-                      "color": "green",
-                      "value": 20
+                      "color": "light-orange",
+                      "value": 25
+                    },
+                    {
+                      "color": "light-green",
+                      "value": 50
                     }
                   ]
                 }
@@ -383,17 +417,15 @@
       "id": 6,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Current Stock"
+          }
+        ]
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -432,9 +464,9 @@
       "type": "table"
     }
   ],
+  "preload": false,
   "refresh": "30s",
-  "schemaVersion": 38,
-  "style": "dark",
+  "schemaVersion": 42,
   "tags": [
     "products",
     "inventory"
@@ -450,6 +482,6 @@
   "timezone": "browser",
   "title": "Product Inventory Overview",
   "uid": "product-list",
-  "version": 1,
+  "version": 7,
   "weekStart": ""
 }
