@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { AuthService } from './services/auth.service';
 
 interface Product {
   id: number;
@@ -43,7 +45,7 @@ interface Notification {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: []
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
   activeTab = 'products';
@@ -67,14 +69,36 @@ export class AppComponent implements OnInit {
   message = '';
   messageType: 'success' | 'error' | '' = '';
   
-  // API URLs - using service names from docker-compose
+  // Auth
+  currentUser$ = this.authService.currentUser$;
+  isAdmin = false;
+  
+  // API URLs
   private readonly PRODUCT_API = '/api/products';
   private readonly ORDER_API = '/api/orders';
   private readonly NOTIFICATION_API = '/api/notifications';
-  constructor(private http: HttpClient) {}
+  
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    public authService: AuthService
+  ) {}
 
   ngOnInit() {
-    this.loadProducts();
+    // Subscribe to auth state
+    this.authService.currentUser$.subscribe(user => {
+      this.isAdmin = user?.role === 'ADMIN';
+      
+      // Auto-fill customer info from logged-in user
+      if (user) {
+        this.customerName = user.username;
+      }
+    });
+
+    // Only load data if logged in
+    if (this.authService.isLoggedIn()) {
+      this.loadProducts();
+    }
   }
 
   setActiveTab(tab: string) {
@@ -158,8 +182,6 @@ export class AppComponent implements OnInit {
           'success'
         );
         this.cart = [];
-        this.customerName = '';
-        this.customerEmail = '';
         this.loadProducts(); // Refresh to see updated stock
         this.loading = false;
         
@@ -205,6 +227,18 @@ export class AppComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.cart = [];
+    this.orders = [];
+    this.notifications = [];
+    this.router.navigate(['/login']);
+  }
+
+  goToAdmin(): void {
+    this.router.navigate(['/admin']);
   }
 
   showMessage(message: string, type: 'success' | 'error') {
