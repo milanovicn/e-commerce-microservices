@@ -87,4 +87,17 @@ public class ProductService {
                 product.getStockQuantity()
         );
     }
+    
+    @Transactional
+    public void restockProduct(Long productId, Integer quantity) {
+        log.info("Restocking product: {} with quantity: {}", productId, quantity);
+        
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        
+        product.setStockQuantity(product.getStockQuantity() + quantity);
+        Product savedProduct = productRepository.save(product);
+        
+        log.info("Product restocked. New stock: {}", savedProduct.getStockQuantity());
+    }
 }

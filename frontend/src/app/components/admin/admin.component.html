@@ -1,0 +1,71 @@
+<div class="admin-container">
+  <h2>🔧 Admin Panel - Restock Products</h2>
+
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div class="admin-content">
+    <!-- Product List -->
+    <div class="product-list">
+      <h3>Products</h3>
+      <div class="product-grid">
+        <div
+          *ngFor="let product of products"
+          class="product-card"
+          [class.selected]="selectedProduct?.id === product.id"
+          (click)="selectProduct(product)"
+        >
+          <h4>{{ product.name }}</h4>
+          <p class="stock" [class.low-stock]="product.stockQuantity < 10">
+            Stock: {{ product.stockQuantity }}
+          </p>
+          <p class="price">${{ product.price }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restock Form -->
+    <div class="restock-panel">
+      <h3>Restock Product</h3>
+      
+      <div *ngIf="!selectedProduct" class="no-selection">
+        ← Select a product to restock
+      </div>
+
+      <div *ngIf="selectedProduct" class="restock-form">
+        <div class="selected-product-info">
+          <h4>{{ selectedProduct.name }}</h4>
+          <p>Current Stock: {{ selectedProduct.stockQuantity }}</p>
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">Add Quantity:</label>
+          <input
+            id="quantity"
+            type="number"
+            [(ngModel)]="restockQuantity"
+            min="1"
+            placeholder="Enter quantity to add"
+          />
+        </div>
+
+        <div class="new-stock-preview" *ngIf="restockQuantity > 0">
+          New Stock: {{ selectedProduct.stockQuantity + restockQuantity }}
+        </div>
+
+        <button
+          (click)="restock()"
+          [disabled]="restockQuantity <= 0"
+          class="restock-button"
+        >
+          Restock Product
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
