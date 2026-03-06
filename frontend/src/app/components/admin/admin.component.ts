@@ -50,12 +50,14 @@ export class AdminComponent implements OnInit {
       return;
     }
 
+    // IMPORTANT: Add responseType: 'text' to expect text response
     this.http.post(
       `/api/products/${this.selectedProduct.id}/restock?quantity=${this.restockQuantity}`,
-      {}
+      {},
+      { responseType: 'text' }  // ← THIS IS THE FIX
     ).subscribe({
-      next: () => {
-        this.successMessage = `Successfully restocked ${this.selectedProduct!.name} with ${this.restockQuantity} units`;
+      next: (response) => {
+        this.successMessage = response; // Will be the text message from backend
         this.errorMessage = '';
         this.loadProducts();
         this.selectedProduct = null;
@@ -63,7 +65,7 @@ export class AdminComponent implements OnInit {
       },
       error: (error) => {
         console.error('Restock failed', error);
-        this.errorMessage = 'Failed to restock product';
+        this.errorMessage = error.error || 'Failed to restock product';
         this.successMessage = '';
       }
     });

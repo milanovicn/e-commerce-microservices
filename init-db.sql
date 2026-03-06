@@ -70,8 +70,8 @@ INSERT INTO products (name, description, price, stock_quantity) VALUES
 -- Insert admin user (password: admin123)
 -- Password is BCrypt hash of 'admin123'
 INSERT INTO users (username, password, email, role) VALUES
-('admin', '$2a$10$rN7VyH5pKLHBQOK8h7Y6AeMQ.YKFzQ6oLxmP7Yp6wZ8YQJ5B6E1yS', 'admin@example.com', 'ADMIN');
+('admin', '$2a$10$pfxx6yCJxh1NXvQXjwZoY.jzK.HvK/OdtLQcwy/XkF07lr1D9SIzm', 'admin@example.com', 'ADMIN');
 
 -- Insert regular user (password: user123)
 INSERT INTO users (username, password, email, role) VALUES
-('user', '$2a$10$3qZ9YKW1Q5pLHY7xZ8YQJ5B6E1ySrN7VyH5pKLHBQOK8h7Y6AeMQ', 'user@example.com', 'USER');
+('user', '$2a$10$4s9mpLNcufYBJ6nA/Y3kKe8cxdaI.eqOLxQn3fxWKMmUtWBJKWtFK', 'user@example.com', 'USER');

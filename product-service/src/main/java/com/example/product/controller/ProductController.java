@@ -4,11 +4,13 @@ import com.example.product.dto.ProductDTO;
 import com.example.product.dto.StockCheckRequest;
 import com.example.product.dto.StockCheckResponse;
 import com.example.product.service.ProductService;
+import com.example.product.security.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -20,6 +22,7 @@ import java.util.List;
 public class ProductController {
     
     private final ProductService productService;
+    private final JwtUtil jwtUtil;
     
     @GetMapping({"", "/"})
     @Operation(summary = "Get all products", description = "Retrieve a list of all products")
@@ -55,45 +58,37 @@ public class ProductController {
     }
 
     @PostMapping("/{id}/restock")
+    @Operation(summary = "Restock product (Admin only)", description = "Increase stock quantity for a product")
     public ResponseEntity<String> restockProduct(
             @PathVariable Long id,
             @RequestParam Integer quantity,
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
-        // Validate token and check admin role
-        if (!isAdmin(token)) {
+        // Check if token exists
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Authentication required");
+        }
+        
+        String token = authHeader.substring(7); // Remove "Bearer " prefix
+        
+        // Validate token
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or expired token");
+        }
+        
+        // Check if user is admin
+        String role = jwtUtil.extractRole(token);
+        if (!"ADMIN".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Admin access required");
         }
         
+        // Perform restock
         productService.restockProduct(id, quantity);
-        return ResponseEntity.ok("Product restocked successfully");
-    }
-
-    private boolean isAdmin(String token) {
-        // Call user-service to validate token and check role
-        String jwt = token.replace("Bearer ", "");
         
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<Map> response = restTemplate.exchange(
-                "http://user-service:8084/api/auth/validate",
-                HttpMethod.GET,
-                new HttpEntity<>(createHeaders(jwt)),
-                Map.class
-            );
-            
-            // Extract role from response
-            // This is simplified - in production, decode JWT or call user service
-            return true; // For now, implement proper validation
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private HttpHeaders createHeaders(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        return headers;
+        String username = jwtUtil.extractUsername(token);
+        return ResponseEntity.ok(String.format("Product restocked successfully by %s", username));
     }
 }
