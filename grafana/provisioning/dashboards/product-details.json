@@ -26,7 +26,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 0
@@ -82,10 +82,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
+        "h": 6,
+        "w": 6,
         "x": 0,
-        "y": 4
+        "y": 3
       },
       "id": 2,
       "options": {
@@ -112,11 +112,77 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "products_stock_level{product_id=\"$product_id\"}",
+          "editorMode": "code",
+          "expr": "microservices_products_stock_level{product_id=\"$product_id\"}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Current Stock Level",
+      "title": "Current Stock",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": " "
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 3
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "microservices_products_stock_units_reduced_total{product_id=\"$product_id\"}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Units Sold (All Time)",
       "type": "stat"
     },
     {
@@ -144,12 +210,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 4
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 3
       },
-      "id": 3,
+      "id": 8,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -172,13 +238,15 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "PBFA97CFB590B2093"
           },
-          "expr": "products_stock_units_reduced_total{product_id=\"$product_id\"}",
+          "editorMode": "code",
+          "expr": "count(microservices_products_stock_changed_total{product_id=\"$product_id\",action=\"restock\"})",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Total Units Reduced",
+      "title": "Restocks (Count)",
       "type": "stat"
     },
     {
@@ -216,10 +284,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 4
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 3
       },
       "id": 4,
       "options": {
@@ -244,11 +312,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "products_stock_level{product_id=\"$product_id\"}",
+          "editorMode": "code",
+          "expr": "microservices_products_stock_level{product_id=\"$product_id\"}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Stock Level Gauge",
+      "title": "Stock Health",
       "type": "gauge"
     },
     {
@@ -278,7 +348,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
@@ -312,9 +382,9 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 12,
+        "w": 11,
         "x": 0,
-        "y": 12
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -337,12 +407,14 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "products_stock_level{product_id=\"$product_id\"}",
+          "editorMode": "code",
+          "expr": "microservices_products_stock_level{product_id=\"$product_id\"}",
           "legendFormat": "Stock Level",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Stock Level Over Time",
+      "title": "📊 Stock Level Over Time",
       "type": "timeseries"
     },
     {
@@ -405,9 +477,9 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 12,
-        "x": 12,
-        "y": 12
+        "w": 13,
+        "x": 11,
+        "y": 9
       },
       "id": 6,
       "options": {
@@ -430,12 +502,14 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(products_stock_units_reduced_total{product_id=\"$product_id\"}[5m]) * 60",
-          "legendFormat": "Reductions/min",
+          "editorMode": "code",
+          "expr": "rate(microservices_products_stock_units_reduced_total{product_id=\"$product_id\"}[5m]) * 60",
+          "legendFormat": "Units/min",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Stock Reductions Rate",
+      "title": "📉 Stock Reduction Rate",
       "type": "timeseries"
     }
   ],
@@ -450,46 +524,46 @@
     "list": [
       {
         "current": {
-          "text": "7",
-          "value": "7"
+          "text": "2",
+          "value": "2"
         },
         "name": "product_id",
         "options": [
           {
             "selected": true,
-            "text": "7",
-            "value": "7"
+            "text": "2",
+            "value": "2"
           }
         ],
-        "query": "7",
+        "query": "2",
         "type": "textbox"
       },
       {
         "current": {
-          "text": "Headphones Pro",
-          "value": "Headphones Pro"
+          "text": "Wireless Mouse",
+          "value": "Wireless Mouse"
         },
         "name": "product_name",
         "options": [
           {
             "selected": true,
-            "text": "Headphones Pro",
-            "value": "Headphones Pro"
+            "text": "Wireless Mouse",
+            "value": "Wireless Mouse"
           }
         ],
-        "query": "Headphones Pro",
+        "query": "Wireless Mouse",
         "type": "textbox"
       }
     ]
   },
   "time": {
-    "from": "now-12h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Product Details",
   "uid": "product-details",
-  "version": 10,
+  "version": 20,
   "weekStart": ""
 }

@@ -173,6 +173,17 @@ public class ProductService {
                 "product_id", productId.toString())
                 .increment(quantity);
         
+        // Track stock change event
+        meterRegistry.counter("products.stock.changed", 
+                Tags.of(
+                    "product_id", productId.toString(),
+                    "product_name", savedProduct.getName(),
+                    "action", "order",  // Indicates this was from an order
+                    "previous_stock", String.valueOf(previousStock),
+                    "new_stock", String.valueOf(savedProduct.getStockQuantity())
+                ))
+                .increment();
+        
         // Update the stock level in map
         AtomicInteger stockLevel = stockLevels.computeIfAbsent(productId, 
                 id -> {
@@ -227,20 +238,28 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         
+        int previousStock = product.getStockQuantity();
         product.setStockQuantity(product.getStockQuantity() + quantity);
         Product savedProduct = productRepository.save(product);
         
-        // Update metrics
-        meterRegistry.counter("products.restocked", 
-                "product_id", productId.toString())
+        // Track restock events with more details
+        meterRegistry.counter("products.stock.changed", 
+                Tags.of(
+                    "product_id", productId.toString(),
+                    "product_name", savedProduct.getName(),
+                    "action", "restock",
+                    "previous_stock", String.valueOf(previousStock),
+                    "new_stock", String.valueOf(savedProduct.getStockQuantity())
+                ))
                 .increment();
         
         // Update stock level gauge
         AtomicInteger stockLevel = stockLevels.get(productId);
         if (stockLevel != null) {
-                stockLevel.set(savedProduct.getStockQuantity());
+            stockLevel.set(savedProduct.getStockQuantity());
         }
         
-        log.info("Product restocked. New stock: {}", savedProduct.getStockQuantity());
+        log.info("Product restocked. Previous: {}, Added: {}, New: {}", 
+                previousStock, quantity, savedProduct.getStockQuantity());
     }
 }
