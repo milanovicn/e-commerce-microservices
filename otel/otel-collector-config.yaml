@@ -5,6 +5,12 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
+        cors:                          # ← added: allows browser to POST metrics
+          allowed_origins:
+            - "http://localhost:4200"  # Angular dev server
+            - "http://localhost:80"    # Angular in Docker
+          allowed_headers:
+            - "*"
 
 processors:
   batch:

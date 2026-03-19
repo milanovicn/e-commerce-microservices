@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { TracingService } from '../../services/tracing.service'; // adjust path if needed
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,8 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private tracingService: TracingService, // ← injected
   ) {}
 
   onSubmit(): void {
@@ -26,6 +28,9 @@ export class LoginComponent {
 
     this.isLoading = true;
     this.errorMessage = '';
+
+    // ← 1 line added — username only, never password
+    this.tracingService.trackFormSubmit('login', { username: this.username });
 
     this.authService.login(this.username, this.password).subscribe({
       next: (response) => {

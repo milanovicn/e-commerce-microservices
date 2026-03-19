@@ -1,0 +1,194 @@
+{
+  "uid": "frontend-user-activity",
+  "title": "Frontend - User Activity",
+  "tags": ["frontend", "user-activity"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Button Clicks Over Time",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum by (ctx_buttonId) (rate(microservices_frontend_button_clicks_total[$__rate_interval]))",
+          "legendFormat": "{{ ctx_buttonId }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Total Button Clicks by Type",
+      "type": "barchart",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum by (ctx_buttonId) (increase(microservices_frontend_button_clicks_total[$__range]))",
+          "legendFormat": "{{ ctx_buttonId }}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "fillOpacity": 80 }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Button Clicks by User",
+      "type": "barchart",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum by (user_username) (increase(microservices_frontend_button_clicks_total[$__range]))",
+          "legendFormat": "{{ user_username }}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "fillOpacity": 80 }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Clicks per User per Button",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sort_desc(sum by (user_username, user_role, ctx_buttonId) (increase(microservices_frontend_button_clicks_total[$__range])))",
+          "legendFormat": "{{ user_username }} - {{ ctx_buttonId }}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": {
+          "renameByName": {
+            "user_username": "User",
+            "user_role": "Role",
+            "ctx_buttonId": "Button",
+            "Value": "Clicks"
+          }
+        }}
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Form Submits Over Time",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 24, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum by (form_name) (rate(microservices_frontend_form_submits_total[$__rate_interval]))",
+          "legendFormat": "{{ form_name }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Total Form Submits by Form",
+      "type": "barchart",
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum by (form_name) (increase(microservices_frontend_form_submits_total[$__range]))",
+          "legendFormat": "{{ form_name }}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "fillOpacity": 80 }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Form Submits by User",
+      "type": "barchart",
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum by (user_username) (increase(microservices_frontend_form_submits_total[$__range]))",
+          "legendFormat": "{{ user_username }}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "fillOpacity": 80 }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Form Submits per User per Form",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 40, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sort_desc(sum by (user_username, user_role, form_name) (increase(microservices_frontend_form_submits_total[$__range])))",
+          "legendFormat": "",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": {
+          "renameByName": {
+            "user_username": "User",
+            "user_role": "Role",
+            "form_name": "Form",
+            "Value": "Submits"
+          }
+        }}
+      ]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "pluginId": "prometheus",
+        "label": "Datasource"
+      },
+      {
+        "name": "user",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "query": "label_values(microservices_frontend_button_clicks_total, user_username)",
+        "label": "User",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "refresh": 2
+      }
+    ]
+  }
+}

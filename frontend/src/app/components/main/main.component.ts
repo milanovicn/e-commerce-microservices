@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { TracingService } from '../../services/tracing.service'; // adjust path if needed
 
 interface Product {
   id: number;
@@ -72,13 +73,19 @@ export class MainComponent implements OnInit {
   private readonly ORDER_API = '/api/orders';
   private readonly NOTIFICATION_API = '/api/notifications';
   
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private tracingService: TracingService, // ← injected
+  ) {}
 
   ngOnInit() {
     this.loadProducts();
+    // Track initial tab landing
+    this.tracingService.trackTabSwitch('', this.activeTab); // ← track initial landing
   }
 
   setActiveTab(tab: string) {
+    this.tracingService.trackTabSwitch(this.activeTab, tab); // ← 1 line added
     this.activeTab = tab;
     this.clearMessage();
     
@@ -112,17 +119,30 @@ export class MainComponent implements OnInit {
         this.showMessage(`Added another ${product.name} to cart`, 'success');
       } else {
         this.showMessage('Not enough stock available', 'error');
+        return;
       }
     } else {
       this.cart.push({ product, quantity: 1 });
       this.showMessage(`${product.name} added to cart`, 'success');
     }
+
+    // ← 1 line added
+    this.tracingService.trackButtonClick('add-to-cart', {
+      productId: product.id,
+      productName: product.name,
+      price: product.price,
+    });
   }
 
   removeFromCart(index: number) {
     const item = this.cart[index];
     this.cart.splice(index, 1);
     this.showMessage(`${item.product.name} removed from cart`, 'success');
+
+    this.tracingService.trackButtonClick('remove-from-cart', { // ← 1 line added
+      productName: item.product.name,
+      productId: item.product.id,
+    });
   }
 
   getCartTotal(): number {
@@ -150,6 +170,12 @@ export class MainComponent implements OnInit {
         quantity: item.quantity
       }))
     };
+
+    // ← 1 line added
+    this.tracingService.trackFormSubmit('checkout', {
+      itemCount: this.cart.length,
+      totalAmount: this.getCartTotal(),
+    });
 
     this.loading = true;
     this.http.post<Order>(this.ORDER_API, orderRequest).subscribe({

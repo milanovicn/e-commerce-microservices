@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { TracingService } from '../../services/tracing.service'; // adjust path if needed
 
 interface Product {
   id: number;
@@ -20,7 +21,10 @@ export class AdminComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private tracingService: TracingService, // ← injected
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
@@ -42,6 +46,12 @@ export class AdminComponent implements OnInit {
     this.restockQuantity = 0;
     this.successMessage = '';
     this.errorMessage = '';
+
+    // ← 1 line added
+    this.tracingService.trackButtonClick('select-product', {
+      productId: product.id,
+      productName: product.name,
+    });
   }
 
   restock(): void {
@@ -50,14 +60,20 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    // IMPORTANT: Add responseType: 'text' to expect text response
+    // ← 1 line added
+    this.tracingService.trackFormSubmit('restock', {
+      productId: this.selectedProduct.id,
+      productName: this.selectedProduct.name,
+      quantity: this.restockQuantity,
+    });
+
     this.http.post(
       `/api/products/${this.selectedProduct.id}/restock?quantity=${this.restockQuantity}`,
       {},
-      { responseType: 'text' }  // ← THIS IS THE FIX
+      { responseType: 'text' }
     ).subscribe({
       next: (response) => {
-        this.successMessage = response; // Will be the text message from backend
+        this.successMessage = response;
         this.errorMessage = '';
         this.loadProducts();
         this.selectedProduct = null;
